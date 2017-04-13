@@ -80,7 +80,11 @@ class Server(object):
 
         # TODO: YOUR CODE HERE
 
-        pass
+        return "I'm now in my " + \
+               ["living room",
+                "kitchen",
+                "bedroom",
+                "bathroom"][room_number]
 
     def greet(self):
         """
@@ -107,9 +111,7 @@ class Server(object):
         :return: None 
         """
 
-        # TODO: YOUR CODE HERE
-
-        pass
+        self.input_buffer = self.client_connection.recv(32).decode()
 
     def move(self, argument):
         """
@@ -132,9 +134,24 @@ class Server(object):
         :return: None
         """
 
-        # TODO: YOUR CODE HERE
+        if self.room == 0:
+            if argument == "north":
+                self.room = 3
+            elif argument == "west":
+                self.room = 1
+            elif argument == "east":
+                self.room = 2
 
-        pass
+        if self.room == 1 and argument == "east":
+            self.room = 0
+
+        if self.room == 2 and argument == "west":
+            self.room = 0
+
+        if self.room == 3 and argument == "south":
+            self.room = 0
+
+        self.output_buffer = self.room_description(self.room)
 
     def say(self, argument):
         """
@@ -150,9 +167,7 @@ class Server(object):
         :return: None
         """
 
-        # TODO: YOUR CODE HERE
-
-        pass
+        self.output_buffer = "You say, \"{}\"".format(argument)
 
     def quit(self, argument):
         """
@@ -166,9 +181,8 @@ class Server(object):
         :return: None
         """
 
-        # TODO: YOUR CODE HERE
-
-        pass
+        self.done = True
+        self.output_buffer = "Bye bye!"
 
     def route(self):
         """
@@ -182,9 +196,23 @@ class Server(object):
         :return: None
         """
 
-        # TODO: YOUR CODE HERE
+        # "move north"
+        # "Should invoke self.move(\"north\")"
+        # "Say is there anyone here?"
+        # "should invoke self.say(\"Is there anyone here?\")"
+        #
+        command = self.input_buffer.split(' ')[0]
+        arguments = " ".join(self.input_buffer.split(' ')[1:])
+        # if command[0] == 'quit':
+        #     self.quit()
+        # elif command[0] == 'move':
+        #     self.move(command[1])
+        # elif command[0] == 'say':
+        #     self.say(" ".joint(command[1:]))
+        # else:
+        #     self.output_buffer = 'unknown command'
 
-        pass
+        {"quit": self.quit, "move": self.move, "say": self.say}.get(command, self.say)(arguments)
 
     def push_output(self):
         """
@@ -194,10 +222,7 @@ class Server(object):
         
         :return: None 
         """
-
-        # TODO: YOUR CODE HERE
-
-        pass
+        self.client_connection.sendall(("OK! " + self.output_buffer).encode())
 
     def serve(self):
         self.connect()
